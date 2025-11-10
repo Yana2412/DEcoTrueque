@@ -4,11 +4,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Ecotrueque - Bienvenido</title>
+  <!-- Fuente personalizada -->
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css">
+  <!-- Estilos -->
+  <link rel="stylesheet" href="css/globals.css">
+  <link rel="stylesheet" href="css/pages/login.css">
+  <link rel="stylesheet" href="css/components/modal.css">
 </head>
 <body>
-  <!-- Fondo completo -->
+  <!-- Fondo completo (debe estar directamente en body) -->
   <div class="background-full" id="background"></div>
 
   <!-- Contenedor principal -->
@@ -32,34 +36,84 @@
       </p>
     </aside>
 
-    <!-- Aquí se cargará la vista actual -->
-    <div id="view-container"></div>
+    <!-- Panel de login (siempre visible) -->
+    <div class="login-panel">
+      <h1>ECOTRUEQUE</h1>
+      <p>Bienvenido,</p>
+      <button class="btn btn--register" id="btnRegister">Registrarse</button>
+      <button class="btn btn--login" id="openLoginModal">Iniciar sesión</button>
+    </div>
   </main>
 
   <!-- Modal de login -->
   <div id="loginModal" class="modal-overlay">
-  <div class="modal-content">
-    <header class="modal-header">
-      <h2 id="modal-title">Iniciar sesión</h2>
-      <button class="modal-close" id="closeLoginModal">×</button>
-    </header>
-    <form id="loginForm">
-      <div class="form-group">
-        <label for="email">Correo electrónico</label>
-        <input type="email" id="email" class="form-control" placeholder="tu@email.com" required>
-      </div>
-      <div class="form-group">
-        <label for="password">Contraseña</label>
-        <input type="password" id="password" class="form-control" placeholder="••••••••" required>
-      </div>
-      <button type="submit" class="btn btn--modal">Iniciar sesión</button>
-    </form>
-    <footer class="modal-footer">
-      ¿No tienes cuenta? <a href="#" id="switchToRegister">Regístrate</a>
-    </footer>
-  </div>
+    <div class="modal-content">
+      <header class="modal-header">
+        <h2>Iniciar sesión</h2>
+        <button class="modal-close" id="closeLoginModal">×</button>
+      </header>
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="email">Correo electrónico</label>
+          <input type="email" id="email" class="form-control" placeholder="tu@email.com" required>
+        </div>
+        <div class="form-group">
+          <label for="password">Contraseña</label>
+          <input type="password" id="password" class="form-control" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="btn btn--modal">Iniciar sesión</button>
+      </form>
+      <footer class="modal-footer">
+        ¿No tienes cuenta? <a href="#" id="openRegisterFromLogin">Regístrate</a>
+      </footer>
+    </div>
   </div>
 
+  <!-- Modal de registro -->
+  <div id="registerModal" class="modal-overlay">
+    <div class="modal-content">
+      <header class="modal-header">
+        <h2>Regístrate</h2>
+        <button class="modal-close" id="closeRegisterModal">×</button>
+      </header>
+      <form id="registerForm">
+        <div class="form-group">
+          <label for="nombre">Nombre(s)</label>
+          <input type="text" id="nombre" class="form-control" placeholder="Escribe tu nombre" required>
+          <span class="error-message" id="nombre-error"></span>
+        </div>
+        <div class="form-group">
+          <label for="apellidoPaterno">Apellido Paterno</label>
+          <input type="text" id="apellidoPaterno" class="form-control" placeholder="Escribe tu apellido paterno" required>
+          <span class="error-message" id="apellidoP-error"></span>
+        </div>
+        <div class="form-group">
+          <label for="apellidoMaterno">Apellido Materno</label>
+          <input type="text" id="apellidoMaterno" class="form-control" placeholder="Escribe tu apellido materno" required>
+          <span class="error-message" id="apellidoM-error"></span>
+        </div>
+        <div class="form-group">
+          <label for="fechaNacimiento">Fecha de nacimiento</label>
+          <input type="date" id="fechaNacimiento" class="form-control" value="2001-01-01" required>
+        </div>
+        <div class="form-group">
+          <label for="telefono">Teléfono</label>
+          <input type="tel" id="telefono" class="form-control" placeholder="9624063042" required>
+          <span class="error-message" id="telefono-error"></span>
+        </div>
+        <div class="form-group">
+          <label for="direccion">Dirección</label>
+          <input type="text" id="direccion" class="form-control" placeholder="Escribe tu dirección" required>
+        </div>
+        <button type="submit" class="btn btn--modal">Registrar</button>
+      </form>
+      <footer class="modal-footer">
+        ¿Ya tienes cuenta? <a href="#" id="openLoginFromRegister">Inicia sesión</a>
+      </footer>
+    </div>
+  </div>
+
+  <!-- JavaScript principal -->
   <script type="module" src="js/main.js"></script>
 </body>
 </html>

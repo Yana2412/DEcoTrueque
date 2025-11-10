@@ -1,0 +1,62 @@
+/* Reset y variables globales */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Variables unificadas */
+:root {
+  --primary-green: #4CAF50;
+  --secondary-green: #8BC34A;
+  --text-dark: #333;
+  --text-light: #666;
+  --white: #fff;
+  --shadow: rgba(0, 0, 0, 0.1);
+  --error-color: #e53935;
+}
+
+/* Errores de validación */
+.error-message {
+  color: var(--error-color);
+  font-size: 12px;
+  margin-top: 4px;
+  display: block;
+  min-height: 16px;
+}
+
+/* Asegurar que el header no bloquee el sidebar */
+header {
+  position: relative;
+  z-index: 900;
+}
+
+/* Estilos para el dropdown de perfil */
+.profile-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 20px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+  padding: 10px 0;
+  min-width: 200px;
+  z-index: 1100;
+  display: none;
+}
+
+.profile-dropdown ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.profile-dropdown ul li {
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.profile-dropdown ul li:hover {
+  background: #f5f5f5;
+}

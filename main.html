@@ -27,7 +27,7 @@
 
     <a href="#" class="logo">ECOTRUEQUE</a>
     <div class="search-bar">
-      <input type="text" placeholder="Search...">
+      <input type="text" placeholder="Buscar productos...">
       <button>🔍</button>
     </div>
     <div class="header-icons">
@@ -35,184 +35,42 @@
       <div class="icon" id="profileIcon">👤</div>
     </div>
   </header>
-    <!-- Overlay para cerrar sidebar -->
+  
+  <!-- Overlay para cerrar sidebar -->
   <div id="sidebarOverlay"></div>
 
   <!-- Sidebar -->
-<aside class="sidebar" id="sidebar">
-  <ul class="sidebar-menu">
-    <li class="active"><span>Compras</span></li>
-    <li><span>Información</span></li>
-    <li><span>Carrito</span></li>
-    <li><span>Listas</span></li>
-    <li><span>Ayuda</span></li>
-  </ul>
-</aside>
+  <aside class="sidebar" id="sidebar">
+    <ul class="sidebar-menu">
+      <li class="active" data-route="home"><span>🏠 Inicio</span></li>
+      <li data-route="buscar"><span>🔍 Buscar</span></li>
+      <li data-route="carrito"><span>🛒 Carrito</span></li>
+      <li data-route="subir-producto"><span>📤 Subir Producto</span></li>
+      <li data-route="perfil"><span>👤 Mi Perfil</span></li>
+      <li data-route="ayuda"><span>❓ Ayuda</span></li>
+    </ul>
+  </aside>
 
   <!-- PERFIL DROPDOWN -->
   <div class="profile-dropdown" id="profileDropdown">
     <ul>
-      <li>Mi Perfil</li>
-      <li>Configuración</li>
-      <li>Historial de Trueques</li>
-      <li>Cerrar Sesión</li>
+      <li>👤 Mi Perfil</li>
+      <li>⚙️ Configuración</li>
+      <li>📋 Historial de Trueques</li>
+      <li>🚪 Cerrar Sesión</li>
     </ul>
   </div>
 
-  <!-- MAIN CONTENT -->
+  <!-- MAIN CONTENT (Dinámico) -->
   <main id="mainContent">
-    <!-- HERO SECTION -->
-    <section class="hero-section">
-      <div class="special-product">
-        <h2>Special Product</h2>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
-        <div>
-          <a href="#" class="btn btn-primary">Get Now</a>
-          <a href="#" class="btn btn-secondary">Learn More</a>
-        </div>
-      </div>
-      <div class="hero-image">
-        <img src="https://via.placeholder.com/400x250?text=Hero+Image" alt="Hero Image">
-      </div>
-    </section>
-
-    <!-- CATEGORY 1 -->
-    <section class="category-section">
-      <div class="section-header">
-        <h2 class="section-title">Category 1</h2>
-        <a href="#" class="see-more">Ver más →</a>
-      </div>
-      <div class="category-tabs">
-        <div class="tab active">General</div>
-        <div class="tab">Plásticos</div>
-        <div class="tab">Metales</div>
-        <div class="tab">Textiles</div>
-        <div class="tab">Madera</div>
-      </div>
-      <div class="product-grid">
-        <div class="product-card">
-          <div class="product-image">
-            <img src="https://via.placeholder.com/200x180?text=Glass+Bottles" alt="Glass Bottles">
-          </div>
-          <div class="product-info">
-            <div class="product-title">Botellas de Vidrio</div>
-            <div class="product-price">🔄 Trueque</div>
-            <div class="product-stats"><span>Vendedor: Ana</span></div>
-            <div class="heart-icon">♡</div>
-          </div>
-        </div>
-        <div class="product-card">
-          <div class="product-image">
-            <img src="https://via.placeholder.com/200x180?text=Clothes" alt="Clothes">
-          </div>
-          <div class="product-info">
-            <div class="product-title">Ropa Usada</div>
-            <div class="product-price">🔄 Trueque</div>
-            <div class="product-stats"><span>Vendedor: Carlos</span></div>
-            <div class="heart-icon">♡</div>
-          </div>
-        </div>
-        <div class="product-card">
-          <div class="product-image">
-            <img src="https://via.placeholder.com/200x180?text=Cardboard" alt="Cardboard">
-          </div>
-          <div class="product-info">
-            <div class="product-title">Caja de Cartón</div>
-            <div class="product-price">🔄 Trueque</div>
-            <div class="product-stats"><span>Vendedor: Luis</span></div>
-            <div class="heart-icon">♡</div>
-          </div>
-        </div>
-        <div class="product-card">
-          <div class="product-image">
-            <img src="https://via.placeholder.com/200x180?text=Wooden+Box" alt="Wooden Box">
-          </div>
-          <div class="product-info">
-            <div class="product-title">Caja de Madera</div>
-            <div class="product-price">₡8000</div>
-            <div class="product-stats"><span>Vendedor: María</span></div>
-            <div class="heart-icon">♡</div>
-          </div>
-        </div>
-        <div class="product-card">
-          <div class="product-image">
-            <img src="https://via.placeholder.com/200x180?text=E-Waste" alt="E-Waste">
-          </div>
-          <div class="product-info">
-            <div class="product-title">Residuos Electrónicos</div>
-            <div class="product-price">🔄 Trueque</div>
-            <div class="product-stats"><span>Vendedor: Jorge</span></div>
-            <div class="heart-icon">♡</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- CATEGORY 2 -->
-    <section class="category-section">
-      <div class="section-header">
-        <h2 class="section-title">Category 2</h2>
-        <a href="#" class="see-more">Ver más →</a>
-      </div>
-      <div class="product-grid">
-        <div class="product-card">
-          <div class="product-image">
-            <img src="https://via.placeholder.com/200x180?text=Plastic+Items" alt="Plastic Items">
-          </div>
-          <div class="product-info">
-            <div class="product-title">Artículos de Plástico</div>
-            <div class="product-price">🔄 Trueque</div>
-            <div class="product-stats"><span>Vendedor: Sofía</span></div>
-            <div class="heart-icon">♡</div>
-          </div>
-        </div>
-        <div class="product-card">
-          <div class="product-image">
-            <img src="https://via.placeholder.com/200x180?text=Aluminum+Cans" alt="Aluminum Cans">
-          </div>
-          <div class="product-info">
-            <div class="product-title">Latas de Aluminio</div>
-            <div class="product-price">🔄 Trueque</div>
-            <div class="product-stats"><span>Vendedor: Diego</span></div>
-            <div class="heart-icon">♡</div>
-          </div>
-        </div>
-        <div class="product-card">
-          <div class="product-image">
-            <img src="https://via.placeholder.com/200x180?text=Metal+Parts" alt="Metal Parts">
-          </div>
-          <div class="product-info">
-            <div class="product-title">Piezas de Metal</div>
-            <div class="product-price">₡5000</div>
-            <div class="product-stats"><span>Vendedor: Elena</span></div>
-            <div class="heart-icon">♡</div>
-          </div>
-        </div>
-        <div class="product-card">
-          <div class="product-image">
-            <img src="https://via.placeholder.com/200x180?text=Electronics" alt="Electronics">
-          </div>
-          <div class="product-info">
-            <div class="product-title">Electrónicos</div>
-            <div class="product-price">₡12000</div>
-            <div class="product-stats"><span>Vendedor: Raúl</span></div>
-            <div class="heart-icon">♡</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- BANDA AMARILLA -->
-    <section class="yellow-band">
-      <p>✨ Aquí irá una imagen promocional o banner informativo. ✨</p>
-      <img src="https://via.placeholder.com/1200x300?text=Banner+Promocional" alt="Banner Promocional">
-    </section>
+    <!-- El contenido se cargará dinámicamente aquí -->
+    <div class="loading">Cargando aplicación...</div>
   </main>
 
   <!-- FLOATING CART BUTTON -->
-  <div id="cartButton" style="position: fixed; bottom: 30px; right: 30px; background-color: var(--primary-green); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 3px 10px var(--shadow); transition: all 0.3s ease; animation: pulse 2s infinite;">
-    <span style="color: white; font-size: 24px;">🛒</span>
-    <span id="carrito-contador" style="position: absolute; top: -5px; right: -5px; background-color: #f44336; color: white; border-radius: 50%; width: 25px; height: 25px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; opacity: 0; transition: opacity 0.3s;"></span>
+  <div id="cartButton">
+    <span>🛒</span>
+    <span id="carrito-contador"></span>
   </div>
 
   <!-- JavaScript principal -->

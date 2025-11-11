@@ -1,5 +1,3 @@
-// js/utils/carritoUtils.js
-
 // ─── FUNCIÓN PARA INICIALIZAR DATOS DE DEMO ───────────────────────
 export function inicializarDatosDemo() {
   if (!localStorage.getItem('productos')) {

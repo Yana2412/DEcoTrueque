@@ -1,54 +1,62 @@
 // js/components/sidebar.js
 
 export function initSidebar() {
-  console.log("Intialized sidebar component");
+  console.log("Sidebar inicializado correctamente");
   
   const menuToggle = document.getElementById('menuToggle');
   const sidebar = document.getElementById('sidebar');
   const overlay = document.getElementById('sidebarOverlay');
-  
-  // Si no existe el overlay, créalo
-  if (!overlay) {
-    const newOverlay = document.createElement('div');
-    newOverlay.id = 'sidebarOverlay';
-    newOverlay.style.cssText = `
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.5);
-      z-index: 999;
-      display: none;
-    `;
-    document.body.appendChild(newOverlay);
-    
-    // Cerrar sidebar al hacer clic en el overlay
-    newOverlay.addEventListener('click', () => {
-      sidebar.classList.remove('active');
-      newOverlay.style.display = 'none';
-    });
+  const mainContent = document.getElementById('mainContent');
+
+  if (!menuToggle || !sidebar || !overlay || !mainContent) {
+    console.warn('Elementos del sidebar no encontrados. Verifica los IDs.');
+    return;
   }
 
-  if (menuToggle && sidebar) {
-    menuToggle.addEventListener('click', (e) => {
-      e.stopPropagation();
-      sidebar.classList.toggle('active');
-      document.getElementById('sidebarOverlay').style.display = 
-        sidebar.classList.contains('active') ? 'block' : 'none';
-    });
-  }
-}
+  // Función para abrir/cerrar sidebar
+  const toggleSidebar = () => {
+    sidebar.classList.toggle('open');
+    overlay.style.display = sidebar.classList.contains('open') ? 'block' : 'none';
+    mainContent.classList.toggle('sidebar-open');
+    menuToggle.classList.toggle('active');
+  };
 
-// Cerrar sidebar al hacer clic fuera de él
-document.addEventListener('click', (e) => {
-  const sidebar = document.getElementById('sidebar');
-  const menuToggle = document.getElementById('menuToggle');
+  // Eventos
+  menuToggle.addEventListener('click', toggleSidebar);
   
-  if (sidebar && menuToggle && sidebar.classList.contains('active')) {
-    if (!sidebar.contains(e.target) && !menuToggle.contains(e.target)) {
-      sidebar.classList.remove('active');
-      document.getElementById('sidebarOverlay').style.display = 'none';
+  // Cerrar sidebar al hacer clic en el overlay
+  overlay.addEventListener('click', toggleSidebar);
+
+  // Cerrar sidebar al hacer clic en un elemento del menú
+  document.querySelectorAll('.sidebar-menu li').forEach(item => {
+    item.addEventListener('click', () => {
+      if (window.innerWidth < 768) { // Solo en móvil
+        toggleSidebar();
+      }
+    });
+  });
+
+  // Cerrar sidebar al redimensionar a desktop
+  window.addEventListener('resize', () => {
+    if (window.innerWidth >= 768 && sidebar.classList.contains('open')) {
+      toggleSidebar();
     }
-  }
-});
+  });
+
+  // Configurar enlaces del sidebar para el router SPA
+  document.querySelectorAll('.sidebar-menu li[data-route]').forEach(item => {
+    item.addEventListener('click', (e) => {
+      e.preventDefault();
+      const route = item.dataset.route;
+      
+      if (window.router) {
+        window.router.navigate(route);
+      }
+      
+      // Cerrar sidebar en móviles después de navegar
+      if (window.innerWidth < 768) {
+        toggleSidebar();
+      }
+    });
+  });
+}

@@ -49,7 +49,7 @@ export function render() {
         ${productosEnCarrito.map(p => `
           <div class="product-card" style="position: relative;">
             <div class="product-image">
-              <img src="${p.imagen || 'https://via.placeholder.com/200x180?text=' + encodeURIComponent(p.nombre)}" alt="${p.nombre}">
+              <img src="${p.imagen || ' https://via.placeholder.com/200x180?text=' + encodeURIComponent(p.nombre)}" alt="${p.nombre}">
             </div>
             <div class="product-info">
               <div class="product-title">${p.nombre}</div>

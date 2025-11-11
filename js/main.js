@@ -1,5 +1,3 @@
-// js/main.js
-
 // Ejecutar solo cuando el DOM esté completamente cargado
 document.addEventListener('DOMContentLoaded', () => {
   const isMainPage = window.location.pathname.includes('main.html');

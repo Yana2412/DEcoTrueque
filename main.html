@@ -14,6 +14,7 @@
   <link rel="stylesheet" href="css/components/sidebar.css">
   <link rel="stylesheet" href="css/components/hero-section.css">
   <link rel="stylesheet" href="css/components/cart-button.css">
+  <link rel="stylesheet" href="css/components/product-modal.css">
 </head>
 <body>
   <!-- HEADER -->
@@ -71,6 +72,36 @@
   <div id="cartButton">
     <span>🛒</span>
     <span id="carrito-contador"></span>
+  </div>
+
+    <!-- Modal de producto -->
+  <div id="productModal" class="product-modal">
+    <div class="product-modal-content">
+      <div class="modal-header">
+        <h3>Detalles del Producto</h3>
+        <button id="modalClose" class="modal-close">×</button>
+      </div>
+      <div class="product-image-modal">
+        <img id="modalProductImage" src="" alt="Imagen del producto">
+      </div>
+      <div class="modal-body">
+        <h2 id="modalProductName" class="product-title-modal">Nombre del Producto</h2>
+        <div id="modalProductPrice" class="product-price-modal">₡0</div>
+        
+        <div class="product-rating">
+          <div class="stars">★★★★★</div>
+          <span id="modalProductRating">0 ⭐ (0 items sold)</span>
+        </div>
+        
+        <p id="modalProductDescription" class="product-description">Descripción del producto</p>
+        
+        <div class="modal-actions">
+          <button class="btn-modal btn-trueque" data-id="0">Trueque</button>
+          <button class="btn-modal btn-compra" data-id="0">Compra</button>
+          <button class="btn-modal btn-carrito" data-id="0">Carrito</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- JavaScript principal -->

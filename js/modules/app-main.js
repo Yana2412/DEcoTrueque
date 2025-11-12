@@ -1,16 +1,16 @@
 // js/modules/app-main.js
 import { initSidebar } from '../components/sidebar.js';
+import { productImageHandler } from '../modules/image-handler.js';
 import { initProfileDropdown } from '../components/profile-dropdown.js';
-import { initProductModal, abrirModalProducto } from '../components/product-modal.js'; // ✅ Solo una importación
+import { initProductModal, abrirModalProducto } from '../components/product-modal.js';
 import { verificarImagenes } from '../utils/carritoUtils.js';
 import { Router } from '../router.js';
+
 import { 
   inicializarDatosDemo, 
   actualizarContadorCarrito,
   agregarAlCarrito 
 } from '../utils/carritoUtils.js';
-
-// El resto del archivo se mantiene igual...
 
 export function initAppMain() {
   try {
@@ -38,6 +38,14 @@ export function initAppMain() {
     // Inicializar router
     console.log('🛣️ Inicializando router...');
     const router = new Router();
+    // Configurar rutas (AGREGAR SUBIR-PRODUCTO)
+    router.addRoute('home', createHomeView);
+    router.addRoute('carrito', createCartView);
+    router.addRoute('perfil', createProfileView);
+    router.addRoute('subir-producto', createUploadProductView); // ✅ NUEVA RUTA
+    
+    // Inicializar router
+    router.init();
     
     // Definir rutas
     console.log('📍 Definiendo rutas...');
@@ -200,6 +208,125 @@ export function initAppMain() {
       return container;
     }
 
+    // NUEVA FUNCIÓN: VISTA DE SUBIR PRODUCTO - ACTUALIZADA
+function createUploadProductView() {
+  const container = document.createElement('div');
+  container.innerHTML = `
+    <div class="upload-container" style="max-width: 600px; margin: 0 auto; padding: 20px;">
+      <h1 class="page-title">📤 Subir Nuevo Producto</h1>
+      
+      <form id="upload-product-form" class="upload-form" style="background: white; padding: 30px; border-radius: 12px; box-shadow: 0 3px 10px rgba(0,0,0,0.1);">
+        
+        <!-- Contenedor para vista previa de imagen -->
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label style="display: block; margin-bottom: 8px; font-weight: bold; color: #333;">Imagen del Producto *</label>
+          <div id="image-drop-zone" style="border: 2px dashed #ddd; border-radius: 8px; padding: 20px; text-align: center; cursor: pointer;"
+             onclick="document.getElementById('image-input').click()">
+            <input type="file" id="image-input" accept="image/*" style="display: none;">
+            <div id="image-preview-container">
+              <div id="image-preview" style="color: #666;">
+                <p>📁 Arrastra una imagen aquí o haz clic para seleccionar</p>
+                <p style="font-size: 12px; margin-top: 5px;">Formatos: JPG, PNG, GIF (Máx. 5MB)</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label for="product-name" style="display: block; margin-bottom: 8px; font-weight: bold; color: #333;">Nombre del Producto *</label>
+          <input type="text" id="product-name" required 
+                 style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; transition: border-color 0.3s;"
+                 placeholder="Ej: Botellas de vidrio recicladas"
+                 onfocus="this.style.borderColor='#4CAF50'"
+                 onblur="this.style.borderColor='#ddd'">
+        </div>
+
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label for="product-category" style="display: block; margin-bottom: 8px; font-weight: bold; color: #333;">Categoría *</label>
+          <select id="product-category" required 
+                  style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; background: white;">
+            <option value="">Selecciona una categoría</option>
+            <option value="vidrio">Vidrio</option>
+            <option value="plastico">Plástico</option>
+            <option value="papel">Papel/Cartón</option>
+            <option value="metal">Metal</option>
+            <option value="textiles">Textiles</option>
+            <option value="madera">Madera</option>
+            <option value="electronicos">Electrónicos</option>
+            <option value="otros">Otros</option>
+          </select>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label style="display: block; margin-bottom: 8px; font-weight: bold; color: #333;">Tipo de Intercambio *</label>
+          <div class="radio-group" style="display: flex; gap: 20px;">
+            <label style="display: flex; align-items: center; cursor: pointer;">
+              <input type="radio" name="product-type" value="trueque" checked style="margin-right: 8px;">
+              🔄 Trueque
+            </label>
+            <label style="display: flex; align-items: center; cursor: pointer;">
+              <input type="radio" name="product-type" value="venta" style="margin-right: 8px;">
+              💰 Venta
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group" id="price-group" style="margin-bottom: 20px; display: none;">
+          <label for="product-price" style="display: block; margin-bottom: 8px; font-weight: bold; color: #333;">Precio (₡) *</label>
+          <input type="number" id="product-price" min="0"
+                 style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px;"
+                 placeholder="Ej: 5000">
+        </div>
+
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label for="product-description" style="display: block; margin-bottom: 8px; font-weight: bold; color: #333;">Descripción *</label>
+          <textarea id="product-description" rows="4" required
+                    style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; resize: vertical;"
+                    placeholder="Describe tu producto... Ej: Botellas de vidrio limpias y clasificadas por color, ideales para manualidades o reciclaje."></textarea>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label for="product-condition" style="display: block; margin-bottom: 8px; font-weight: bold; color: #333;">Estado del Producto *</label>
+          <select id="product-condition" required
+                  style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; background: white;">
+            <option value="">Selecciona el estado</option>
+            <option value="nuevo">Nuevo</option>
+            <option value="como-nuevo">Como nuevo</option>
+            <option value="bueno">Buen estado</option>
+            <option value="regular">Estado regular</option>
+            <option value="necesita-reparacion">Necesita reparación</option>
+          </select>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label for="product-location" style="display: block; margin-bottom: 8px; font-weight: bold; color: #333;">Ubicación *</label>
+          <input type="text" id="product-location" required
+                 style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px;"
+                 placeholder="Ej: San José, Costa Rica">
+        </div>
+
+        <div class="form-actions" style="display: flex; gap: 10px;">
+          <button type="button" class="btn btn-secondary" data-route="home" 
+                  style="padding: 12px 24px; background: #6c757d; color: white; border: none; border-radius: 8px; cursor: pointer; flex: 1;">
+            Cancelar
+          </button>
+          <button type="submit" class="btn btn-primary"
+                  style="padding: 12px 24px; background: #4CAF50; color: white; border: none; border-radius: 8px; cursor: pointer; flex: 2; font-weight: bold;">
+            🚀 Publicar Producto
+          </button>
+        </div>
+      </form>
+    </div>
+  `;
+
+  // Inicializar eventos del formulario
+  setTimeout(() => {
+    initUploadFormEvents();
+  }, 100);
+
+  return container;
+}
+
     function loadProducts(category = 'todos') {
       const grid = document.getElementById('products-grid');
       if (!grid) {
@@ -298,13 +425,194 @@ export function initAppMain() {
       });
     }
 
-    // Configurar rutas
-    router.addRoute('home', createHomeView);
-    router.addRoute('carrito', createCartView);
-    router.addRoute('perfil', createProfileView);
-    
-    // Inicializar router
-    router.init();
+    //drag & drop completo)
+    function initUploadFormEvents() {
+      const form = document.getElementById('upload-product-form');
+      const productTypeRadios = document.querySelectorAll('input[name="product-type"]');
+      const priceGroup = document.getElementById('price-group');
+      const imageDropZone = document.getElementById('image-drop-zone');
+      
+      // Inicializar el manejador de imágenes
+      productImageHandler.initialize('image-input', 'image-preview-container');
+
+      // Mostrar/ocultar campo de precio según tipo
+      productTypeRadios.forEach(radio => {
+        radio.addEventListener('change', () => {
+          priceGroup.style.display = radio.value === 'venta' ? 'block' : 'none';
+          if (radio.value === 'venta') {
+            document.getElementById('product-price').required = true;
+          } else {
+            document.getElementById('product-price').required = false;
+          }
+        });
+      });
+
+      // Manejar drag & drop de imágenes
+      if (imageDropZone) {
+        imageDropZone.addEventListener('dragover', (event) => {
+          event.preventDefault();
+          imageDropZone.style.borderColor = '#4CAF50';
+          imageDropZone.style.backgroundColor = '#f8fff8';
+        });
+
+        imageDropZone.addEventListener('dragleave', (event) => {
+          event.preventDefault();
+          imageDropZone.style.borderColor = '#ddd';
+          imageDropZone.style.backgroundColor = 'transparent';
+        });
+
+        imageDropZone.addEventListener('drop', (event) => {
+          event.preventDefault();
+          imageDropZone.style.borderColor = '#ddd';
+          imageDropZone.style.backgroundColor = 'transparent';
+          
+          const file = event.dataTransfer.files[0];
+          if (file && file.type.startsWith('image/')) {
+            // Usar el image handler para mostrar la imagen
+            productImageHandler.displayImage(file);
+            document.getElementById('image-input').files = event.dataTransfer.files;
+          }
+        });
+      }
+
+      // Manejar envío del formulario
+      if (form) {
+        form.addEventListener('submit', handleProductSubmit);
+      }
+
+      // Navegación del botón cancelar
+      const cancelBtn = form.querySelector('[data-route="home"]');
+      if (cancelBtn) {
+        cancelBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          productImageHandler.reset(); // Limpiar imagen al cancelar
+          window.router.navigate('home');
+        });
+      }
+    }
+    // Función para manejar el envío del formulario
+    function handleProductSubmit(event) {
+      event.preventDefault();
+      
+      const formData = {
+        nombre: document.getElementById('product-name').value.trim(),
+        categoria: document.getElementById('product-category').value,
+        tipo: document.querySelector('input[name="product-type"]:checked').value,
+        precio: document.getElementById('product-price').value ? parseInt(document.getElementById('product-price').value) : 0,
+        descripcion: document.getElementById('product-description').value.trim(),
+        condicion: document.getElementById('product-condition').value,
+        ubicacion: document.getElementById('product-location').value.trim(),
+        imagen: getImageData(),
+        vendedor: localStorage.getItem('usuarioNombre') || 'Usuario Ecotrueque',
+        rating: 5.0,
+        itemsSold: 0,
+        disponibles: 1,
+        fechaPublicacion: new Date().toISOString()
+      };
+
+      // Validaciones
+      if (!formData.nombre) {
+        showNotification('❌ El nombre del producto es requerido', 'error');
+        return;
+      }
+
+      if (!formData.categoria) {
+        showNotification('❌ La categoría es requerida', 'error');
+        return;
+      }
+
+      if (!formData.descripcion) {
+        showNotification('❌ La descripción es requerida', 'error');
+        return;
+      }
+
+      if (formData.tipo === 'venta' && formData.precio <= 0) {
+        showNotification('❌ El precio debe ser mayor a 0 para productos en venta', 'error');
+        return;
+      }
+
+      // Validar que se haya subido una imagen
+      if (!productImageHandler.hasImage()) {
+        showNotification('❌ Por favor, selecciona una imagen para el producto', 'error');
+        return;
+      }
+
+      // Guardar producto
+      saveProduct(formData);
+    }
+
+    // Función para obtener datos de la imagen
+    function getImageData() {
+      const imageData = productImageHandler.getImageData();
+      if (imageData) {
+        return imageData;
+      }
+      // Imagen por defecto si no se sube ninguna
+      return 'https://images.unsplash.com/photo-1586023492120-6b4d2a8e5c3a?w=400&h=300&fit=crop';
+    }
+
+    // Función para guardar producto (ya existe en tu código, mantenerla)
+    function saveProduct(productData) {
+      try {
+        const productos = JSON.parse(localStorage.getItem('productos')) || [];
+        
+        // Generar nuevo ID
+        const newId = productos.length > 0 ? Math.max(...productos.map(p => p.id)) + 1 : 1;
+        
+        const nuevoProducto = {
+          id: newId,
+          ...productData
+        };
+
+        productos.push(nuevoProducto);
+        localStorage.setItem('productos', JSON.stringify(productos));
+
+        showNotification('✅ ¡Producto publicado exitosamente!');
+        
+        // Redirigir al home después de 2 segundos
+        setTimeout(() => {
+          window.router.navigate('home');
+        }, 2000);
+
+      } catch (error) {
+        console.error('Error al guardar producto:', error);
+        showNotification('❌ Error al publicar el producto', 'error');
+      }
+    }
+
+    // Función para mostrar notificaciones (ya existe en tu código, mantenerla)
+    function showNotification(mensaje, tipo = 'success') {
+      const notification = document.createElement('div');
+      notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${tipo === 'success' ? '#4CAF50' : '#f44336'};
+        color: white;
+        padding: 15px 20px;
+        border-radius: 8px;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        z-index: 10000;
+        animation: slideIn 0.3s ease-out;
+      `;
+      
+      notification.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 10px;">
+          ${tipo === 'success' ? '✅' : '❌'} ${mensaje}
+        </div>
+      `;
+      
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        notification.style.animation = 'fadeOut 0.3s ease-in';
+        setTimeout(() => {
+          if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+          }
+        }, 300);
+      }, 3000);
+    }
     
     // Actualizar contador de carrito
     actualizarContadorCarrito();

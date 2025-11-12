@@ -33,57 +33,56 @@ export class Router {
   }
 
   renderRoute(path) {
-    console.log(`🎨 Renderizando ruta: ${path}`);
-    
-    const component = this.routes[path] || this.routes['home'];
-    
-    if (!component) {
-      console.error(`❌ Ruta no encontrada: ${path}`);
+  console.log(`🎨 Renderizando ruta: ${path}`);
+  
+  const component = this.routes[path] || this.routes['home'];
+  
+  if (!component) {
+    console.error(`❌ Ruta no encontrada: ${path}`);
+    this.mainContent.innerHTML = `
+      <div class="error" style="text-align: center; padding: 40px;">
+        <h2>Error 404</h2>
+        <p>La página "${path}" no existe.</p>
+        <button data-route="home" class="btn btn-primary">Volver al Inicio</button>
+      </div>
+    `;
+    return;
+  }
+
+  this.currentRoute = path;
+  
+  // ✅ LIMPIAR COMPLETAMENTE antes de renderizar
+  this.mainContent.innerHTML = '';
+  
+  // Renderizar componente
+  setTimeout(() => {
+    try {
+      if (typeof component === 'function') {
+        const componentElement = component();
+        if (componentElement) {
+          this.mainContent.appendChild(componentElement);
+        }
+      } else {
+        this.mainContent.innerHTML = component;
+      }
+      
+      console.log(`✅ Ruta "${path}" renderizada correctamente`);
+      
+      // Ejecutar callbacks después de renderizar
+      this.executeRouteCallbacks(path);
+      
+    } catch (error) {
+      console.error(`❌ Error al renderizar vista ${path}:`, error);
       this.mainContent.innerHTML = `
         <div class="error" style="text-align: center; padding: 40px;">
-          <h2>Error 404</h2>
-          <p>La página "${path}" no existe.</p>
+          <h2>Error al cargar la página</h2>
+          <p>${error.message}</p>
           <button data-route="home" class="btn btn-primary">Volver al Inicio</button>
         </div>
       `;
-      return;
     }
-
-    this.currentRoute = path;
-    
-    // Mostrar loading
-    this.mainContent.innerHTML = '<div class="loading">Cargando...</div>';
-    
-    // Renderizar componente
-    setTimeout(() => {
-      try {
-        if (typeof component === 'function') {
-          this.mainContent.innerHTML = '';
-          const componentElement = component();
-          if (componentElement) {
-            this.mainContent.appendChild(componentElement);
-          }
-        } else {
-          this.mainContent.innerHTML = component;
-        }
-        
-        console.log(`✅ Ruta "${path}" renderizada correctamente`);
-        
-        // Ejecutar callbacks después de renderizar
-        this.executeRouteCallbacks(path);
-        
-      } catch (error) {
-        console.error(`❌ Error al renderizar vista ${path}:`, error);
-        this.mainContent.innerHTML = `
-          <div class="error" style="text-align: center; padding: 40px;">
-            <h2>Error al cargar la página</h2>
-            <p>${error.message}</p>
-            <button data-route="home" class="btn btn-primary">Volver al Inicio</button>
-          </div>
-        `;
-      }
-    }, 100);
-  }
+  }, 100);
+}
 
   executeRouteCallbacks(path) {
     try {

@@ -1,177 +1,180 @@
 // js/components/modal.js
+// Controla los modales de Login y Registro en index.html
+// Ahora delega la lógica de autenticación en js/modules/auth-service.js
+
+import { loginUsuario, registrarUsuario } from '../modules/auth-service.js';
 
 export function initModal() {
-  // === MODAL DE LOGIN ===
+  // === Elementos comunes ===
   const loginModal = document.getElementById('loginModal');
-  const openLoginBtn = document.getElementById('openLoginModal');
-  const closeLoginBtn = document.getElementById('closeLoginModal');
-  const openRegisterFromLogin = document.getElementById('openRegisterFromLogin');
-
-  // Abrir login
-  if (openLoginBtn) {
-    openLoginBtn.addEventListener('click', () => {
-      if (loginModal) loginModal.style.display = 'flex';
-    });
-  }
-
-  // Cerrar login
-  if (closeLoginBtn) {
-    closeLoginBtn.addEventListener('click', () => {
-      if (loginModal) loginModal.style.display = 'none';
-    });
-  }
-
-  // Abrir registro desde login
-  if (openRegisterFromLogin) {
-    openRegisterFromLogin.addEventListener('click', (e) => {
-      e.preventDefault();
-      if (loginModal) loginModal.style.display = 'none';
-      const registerModal = document.getElementById('registerModal');
-      if (registerModal) registerModal.style.display = 'flex';
-    });
-  }
-
-  // Cerrar login al hacer clic fuera
-  if (loginModal) {
-    loginModal.addEventListener('click', (e) => {
-      if (e.target === loginModal) loginModal.style.display = 'none';
-    });
-  }
-
-  // === MODAL DE REGISTRO ===
   const registerModal = document.getElementById('registerModal');
-  const openRegisterBtn = document.getElementById('btnRegister');
+
+  const openLoginBtn = document.getElementById('openLoginModal');
+  const btnRegisterPanel = document.getElementById('btnRegister');
+
+  const closeLoginBtn = document.getElementById('closeLoginModal');
   const closeRegisterBtn = document.getElementById('closeRegisterModal');
+
+  const openRegisterFromLogin = document.getElementById('openRegisterFromLogin');
   const openLoginFromRegister = document.getElementById('openLoginFromRegister');
 
-  // Abrir registro desde botón principal
-  if (openRegisterBtn) {
-    openRegisterBtn.addEventListener('click', () => {
-      if (registerModal) registerModal.style.display = 'flex';
-    });
-  }
-
-  // Cerrar registro
-  if (closeRegisterBtn) {
-    closeRegisterBtn.addEventListener('click', () => {
-      if (registerModal) registerModal.style.display = 'none';
-    });
-  }
-
-  // Abrir login desde registro
-  if (openLoginFromRegister) {
-    openLoginFromRegister.addEventListener('click', (e) => {
-      e.preventDefault();
-      if (registerModal) registerModal.style.display = 'none';
-      if (loginModal) loginModal.style.display = 'flex';
-    });
-  }
-
-  // Cerrar registro al hacer clic fuera
-  if (registerModal) {
-    registerModal.addEventListener('click', (e) => {
-      if (e.target === registerModal) registerModal.style.display = 'none';
-    });
-  }
-
-  // === VALIDACIÓN EN TIEMPO REAL ===
-  const textInputs = ['nombre', 'apellidoPaterno', 'apellidoMaterno'];
-  textInputs.forEach(id => {
-    const input = document.getElementById(id);
-    if (input) {
-      input.addEventListener('input', () => {
-        let value = input.value;
-        // Solo letras y espacios
-        value = value.replace(/[^a-zA-Z\s]/g, '');
-        input.value = value;
-
-        const errorSpan = document.getElementById(`${id}-error`);
-        if (errorSpan) {
-          if (value.trim() === '') {
-            errorSpan.textContent = 'Este campo es obligatorio';
-          } else if (!/^[a-zA-Z\s]+$/.test(value)) {
-            errorSpan.textContent = 'Solo letras y espacios';
-          } else {
-            errorSpan.textContent = '';
-          }
-        }
-      });
-    }
-  });
-
-  // Validar teléfono
-  const phoneInput = document.getElementById('telefono');
-  if (phoneInput) {
-    phoneInput.addEventListener('input', () => {
-      let value = phoneInput.value.replace(/\D/g, '');
-      if (value.length > 10) value = value.slice(0, 10);
-      phoneInput.value = value;
-
-      const errorSpan = document.getElementById('telefono-error');
-      if (errorSpan) {
-        if (value.length === 0) {
-          errorSpan.textContent = 'Este campo es obligatorio';
-        } else if (value.length !== 10) {
-          errorSpan.textContent = 'Debe tener 10 dígitos';
-        } else {
-          errorSpan.textContent = '';
-        }
-      }
-    });
-  }
-
-  // === FORMULARIOS ===
   const loginForm = document.getElementById('loginForm');
   const registerForm = document.getElementById('registerForm');
 
-  // Login
-  if (loginForm) {
-    loginForm.addEventListener('submit', (e) => {
+  function abrir(modal) {
+    if (modal) modal.style.display = 'flex';
+  }
+
+  function cerrar(modal) {
+    if (modal) modal.style.display = 'none';
+  }
+
+  // === Abrir / cerrar login ===
+  if (openLoginBtn) {
+    openLoginBtn.addEventListener('click', () => abrir(loginModal));
+  }
+  if (closeLoginBtn) {
+    closeLoginBtn.addEventListener('click', () => cerrar(loginModal));
+  }
+
+  // === Abrir / cerrar registro ===
+  if (btnRegisterPanel) {
+    btnRegisterPanel.addEventListener('click', () => abrir(registerModal));
+  }
+  if (closeRegisterBtn) {
+    closeRegisterBtn.addEventListener('click', () => cerrar(registerModal));
+  }
+
+  // === Navegación entre modales ===
+  if (openRegisterFromLogin) {
+    openRegisterFromLogin.addEventListener('click', (e) => {
       e.preventDefault();
+      cerrar(loginModal);
+      abrir(registerModal);
+    });
+  }
+  if (openLoginFromRegister) {
+    openLoginFromRegister.addEventListener('click', (e) => {
+      e.preventDefault();
+      cerrar(registerModal);
+      abrir(loginModal);
+    });
+  }
+
+  // Cerrar al hacer clic fuera del contenido
+  [loginModal, registerModal].forEach((modal) => {
+    if (!modal) return;
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        cerrar(modal);
+      }
+    });
+  });
+
+  // =====================
+  //       LOGIN
+  // =====================
+  if (loginForm) {
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
       const email = document.getElementById('email')?.value.trim();
       const password = document.getElementById('password')?.value;
+
       if (!email || !password) {
         alert('Por favor completa todos los campos.');
         return;
       }
-      alert('¡Inicio de sesión exitoso! 🎉');
-      if (loginModal) loginModal.style.display = 'none';
-      // Redirigir a la página principal
-      window.location.href = 'main.html';
+
+      try {
+        const resp = await loginUsuario({ email, password });
+        if (!resp.ok) {
+          alert(resp.message || 'No fue posible iniciar sesión.');
+          return;
+        }
+
+        alert('¡Inicio de sesión exitoso! 🎉');
+        cerrar(loginModal);
+
+        // Redirigir a la página principal
+        window.location.href = 'main.html';
+      } catch (err) {
+        console.error('Error en login:', err);
+        alert('Ocurrió un error al iniciar sesión.');
+      }
     });
   }
 
-  // Registro
+  // =====================
+  //       REGISTRO
+  // =====================
   if (registerForm) {
-    registerForm.addEventListener('submit', (e) => {
+    registerForm.addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      // Validar campos
+      // Limpiar mensajes previos
+      const errorSpans = document.querySelectorAll('.error-message');
+      errorSpans.forEach((span) => (span.textContent = ''));
+
+      const nombre = document.getElementById('nombre')?.value.trim();
+      const apellidoPaterno =
+        document.getElementById('apellidoPaterno')?.value.trim();
+      const apellidoMaterno =
+        document.getElementById('apellidoMaterno')?.value.trim();
+      const fechaNacimiento =
+        document.getElementById('fechaNacimiento')?.value;
+      const telefono = document.getElementById('telefono')?.value.trim();
+      const direccion = document.getElementById('direccion')?.value.trim();
+
+      // 🔹 Campos nuevos para registro
+      const emailRegistro = document.getElementById('regEmail')?.value.trim();
+      const passwordRegistro =
+        document.getElementById('regPassword')?.value || '';
+
       let isValid = true;
-      const errorSpans = [];
 
-      // Validar nombre y apellidos
-      textInputs.forEach(id => {
-        const input = document.getElementById(id);
-        const value = input.value.trim();
-        const errorSpan = document.getElementById(`${id}-error`);
-        if (value === '' || !/^[a-zA-Z\s]+$/.test(value)) {
-          if (errorSpan) {
-            errorSpan.textContent = 'Solo letras y espacios';
-            errorSpans.push(errorSpan);
-          }
-          isValid = false;
-        }
-      });
+      // --- Validaciones básicas ---
+      if (!nombre) {
+        const span = document.getElementById('nombre-error');
+        if (span) span.textContent = 'El nombre es obligatorio.';
+        isValid = false;
+      }
 
-      // Validar teléfono
-      const phone = phoneInput.value;
-      const phoneError = document.getElementById('telefono-error');
-      if (phone.length !== 10) {
-        if (phoneError) {
-          phoneError.textContent = 'Debe tener 10 dígitos';
-          errorSpans.push(phoneError);
-        }
+      if (!apellidoPaterno) {
+        const span = document.getElementById('apellidoP-error');
+        if (span) span.textContent = 'El apellido paterno es obligatorio.';
+        isValid = false;
+      }
+
+      if (!apellidoMaterno) {
+        const span = document.getElementById('apellidoM-error');
+        if (span) span.textContent = 'El apellido materno es obligatorio.';
+        isValid = false;
+      }
+
+      const telefonoLimpio = (telefono || '').replace(/\D/g, '');
+
+      if (!telefonoLimpio || !/^\d{10}$/.test(telefonoLimpio)) {
+        const span = document.getElementById('telefono-error');
+        if (span) span.textContent = 'Ingresa un teléfono válido de 10 dígitos.';
+        isValid = false;
+      } else {
+        const span = document.getElementById('telefono-error');
+        if (span) span.textContent = '';
+      }
+
+      if (!direccion) {
+        // si quieres, puedes añadir un span-error para dirección
+        isValid = false;
+      }
+
+      if (!emailRegistro || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailRegistro)) {
+        alert('Ingresa un correo electrónico válido para el registro.');
+        isValid = false;
+      }
+
+      if (!passwordRegistro || passwordRegistro.length < 6) {
+        alert('La contraseña debe tener al menos 6 caracteres.');
         isValid = false;
       }
 
@@ -180,8 +183,32 @@ export function initModal() {
         return;
       }
 
-      alert('¡Registro exitoso! 🌿');
-      if (registerModal) registerModal.style.display = 'none';
+      try {
+        const datos = {
+          nombre,
+          apellidos: `${apellidoPaterno} ${apellidoMaterno}`,
+          telefono: telefonoLimpio,
+          direccion,
+          email: emailRegistro,
+          password: passwordRegistro,
+          fechaNacimiento,
+        };
+
+        const resp = await registrarUsuario(datos);
+        if (!resp.ok) {
+          alert(resp.message || 'No fue posible registrar al usuario.');
+          return;
+        }
+
+        alert('¡Registro exitoso! 🌿');
+        cerrar(registerModal);
+
+        // Como ya se queda logueado, mandamos directo a la página principal
+        window.location.href = 'main.html';
+      } catch (err) {
+        console.error('Error en registro:', err);
+        alert('Ocurrió un error al registrar al usuario.');
+      }
     });
   }
 }

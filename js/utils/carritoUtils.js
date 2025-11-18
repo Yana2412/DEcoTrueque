@@ -137,7 +137,6 @@ export function inicializarDatosDemo() {
     
     // Verificar y corregir imágenes antes de guardar
     const productosCorregidos = productosDemo.map(producto => {
-      // Si la imagen está vacía o no existe, crear una imagen SVG como fallback
       if (!producto.imagen || producto.imagen === '') {
         producto.imagen = generarImagenFallback(producto.nombre);
       }
@@ -215,10 +214,7 @@ export function agregarAlCarrito(idProducto) {
 
     localStorage.setItem('carrito', JSON.stringify(carrito));
     actualizarContadorCarrito();
-    
-    // Disparar evento personalizado
     window.dispatchEvent(new CustomEvent('carritoActualizado'));
-    
     return true;
   } catch (error) {
     console.error('Error al agregar al carrito:', error);

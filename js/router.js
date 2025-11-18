@@ -33,56 +33,52 @@ export class Router {
   }
 
   renderRoute(path) {
-  console.log(`🎨 Renderizando ruta: ${path}`);
+    console.log(`🎨 Renderizando ruta: ${path}`);
   
-  const component = this.routes[path] || this.routes['home'];
+    const component = this.routes[path] || this.routes['home'];
   
-  if (!component) {
-    console.error(`❌ Ruta no encontrada: ${path}`);
-    this.mainContent.innerHTML = `
-      <div class="error" style="text-align: center; padding: 40px;">
-        <h2>Error 404</h2>
-        <p>La página "${path}" no existe.</p>
-        <button data-route="home" class="btn btn-primary">Volver al Inicio</button>
-      </div>
-    `;
-    return;
-  }
-
-  this.currentRoute = path;
-  
-  // ✅ LIMPIAR COMPLETAMENTE antes de renderizar
-  this.mainContent.innerHTML = '';
-  
-  // Renderizar componente
-  setTimeout(() => {
-    try {
-      if (typeof component === 'function') {
-        const componentElement = component();
-        if (componentElement) {
-          this.mainContent.appendChild(componentElement);
-        }
-      } else {
-        this.mainContent.innerHTML = component;
-      }
-      
-      console.log(`✅ Ruta "${path}" renderizada correctamente`);
-      
-      // Ejecutar callbacks después de renderizar
-      this.executeRouteCallbacks(path);
-      
-    } catch (error) {
-      console.error(`❌ Error al renderizar vista ${path}:`, error);
+    if (!component) {
+      console.error(`❌ Ruta no encontrada: ${path}`);
       this.mainContent.innerHTML = `
         <div class="error" style="text-align: center; padding: 40px;">
-          <h2>Error al cargar la página</h2>
-          <p>${error.message}</p>
+          <h2>Error 404</h2>
+          <p>La página "${path}" no existe.</p>
           <button data-route="home" class="btn btn-primary">Volver al Inicio</button>
         </div>
       `;
+      return;
     }
-  }, 100);
-}
+
+    this.currentRoute = path;
+    this.mainContent.innerHTML = '';
+
+    setTimeout(() => {
+      try {
+        if (typeof component === 'function') {
+          const componentElement = component();
+          if (componentElement) {
+            this.mainContent.appendChild(componentElement);
+          }
+        } else {
+          this.mainContent.innerHTML = component;
+        }
+        
+        console.log(`✅ Ruta "${path}" renderizada correctamente`);
+        
+        this.executeRouteCallbacks(path);
+        
+      } catch (error) {
+        console.error(`❌ Error al renderizar vista ${path}:`, error);
+        this.mainContent.innerHTML = `
+          <div class="error" style="text-align: center; padding: 40px;">
+            <h2>Error al cargar la página</h2>
+            <p>${error.message}</p>
+            <button data-route="home" class="btn btn-primary">Volver al Inicio</button>
+          </div>
+        `;
+      }
+    }, 100);
+  }
 
   executeRouteCallbacks(path) {
     try {
@@ -93,6 +89,12 @@ export class Router {
         case 'carrito':
           this.initCartEvents();
           break;
+        case 'recibo':
+          // No requiere eventos especiales de momento
+          break;
+        case 'chat-trueque':
+          // Chat maneja sus propios eventos en la vista
+          break;
       }
     } catch (error) {
       console.error(`❌ Error en callbacks de ruta ${path}:`, error);
@@ -100,12 +102,10 @@ export class Router {
   }
 
   initHomeEvents() {
-    // Eventos específicos de la página de inicio
     console.log('🎯 Inicializando eventos de home');
   }
 
   initCartEvents() {
-    // Eventos específicos del carrito
     const removeButtons = document.querySelectorAll('.btn-remove');
     removeButtons.forEach(btn => {
       btn.addEventListener('click', (e) => {
@@ -125,27 +125,76 @@ export class Router {
   removeFromCart(productId) {
     import('./utils/carritoUtils.js').then(module => {
       module.eliminarDelCarrito(productId);
-      this.navigate('carrito'); // Recargar vista del carrito
+      this.navigate('carrito');
     });
   }
 
   finalizarCompra() {
-    alert('¡Gracias por tu compra! Esta funcionalidad está en desarrollo.');
-    // Aquí iría la lógica de finalización de compra
+    import('./utils/carritoUtils.js').then(module => {
+      const carrito = module.obtenerCarrito();
+      const productos = module.obtenerProductos();
+
+      const itemsCompra = carrito
+        .map(item => {
+          const p = productos.find(prod => prod.id === item.id);
+          return p && p.tipo === 'venta'
+            ? { ...p, cantidad: item.cantidad || 1 }
+            : null;
+        })
+        .filter(Boolean);
+
+      if (itemsCompra.length === 0) {
+        alert('No hay productos de venta en el carrito.');
+        return;
+      }
+
+      const total = itemsCompra.reduce((s, p) => s + p.precio * p.cantidad, 0);
+
+      // Marcar productos como no disponibles
+      const productosActualizados = productos.map(p => {
+        const itemCarrito = carrito.find(c => c.id === p.id);
+        if (itemCarrito && p.tipo === 'venta') {
+          return { ...p, disponibles: 0 };
+        }
+        return p;
+      });
+
+      localStorage.setItem('productos', JSON.stringify(productosActualizados));
+      module.vaciarCarrito();
+
+      const usuario = JSON.parse(localStorage.getItem('usuarioActual') || 'null');
+      const nombreUsuario = usuario?.nombre || 'Usuario Ecotrueque';
+
+      const transaccion = {
+        tipo: 'compra',
+        fecha: new Date().toISOString(),
+        usuario: nombreUsuario,
+        vendedor: itemsCompra.length === 1 ? itemsCompra[0].vendedor : 'Varios vendedores',
+        producto: itemsCompra.length === 1 ? itemsCompra[0].nombre : `${itemsCompra.length} productos`,
+        cantidad: itemsCompra.reduce((s, p) => s + p.cantidad, 0),
+        metodoPago: 'Tarjeta de Crédito',
+        total
+      };
+
+      sessionStorage.setItem('transaccionActual', JSON.stringify(transaccion));
+
+      if (window.router) {
+        window.router.navigate('recibo');
+      } else {
+        window.location.hash = '#recibo';
+      }
+    });
   }
 
   init() {
-    // Navegación inicial
     const initialPath = window.location.hash.slice(1) || 'home';
     this.renderRoute(initialPath);
 
-    // Escuchar cambios de hash
     window.addEventListener('hashchange', () => {
       const path = window.location.hash.slice(1) || 'home';
       this.renderRoute(path);
     });
 
-    // Navegación con botones
     document.addEventListener('click', (e) => {
       if (e.target.matches('[data-route]')) {
         e.preventDefault();
@@ -154,8 +203,7 @@ export class Router {
       }
     });
 
-    // Manejar botón de retroceso/avance del navegador
-    window.addEventListener('popstate', (e) => {
+    window.addEventListener('popstate', () => {
       const path = window.location.hash.slice(1) || 'home';
       this.renderRoute(path);
     });

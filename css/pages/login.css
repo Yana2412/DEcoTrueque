@@ -11,15 +11,15 @@ body {
 }
 
 .background-full {
+  background-image: url('../../assets/images/Iniciooo.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-image: url('/DEcoTrueque/assets/images/Iniciooo.png');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
   z-index: -1;
 }
 

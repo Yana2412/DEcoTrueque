@@ -1,15 +1,20 @@
-// js/modules/app-main.js
+// js/modules/app-main.js 
+
 import { initSidebar } from '../components/sidebar.js';
 import { productImageHandler } from '../modules/image-handler.js';
 import { initProfileDropdown } from '../components/profile-dropdown.js';
 import { initProductModal, abrirModalProducto } from '../components/product-modal.js';
-import { verificarImagenes } from '../utils/carritoUtils.js';
 import { Router } from '../router.js';
 
+// Unificamos todos los helpers del carrito en un solo import
 import {
   inicializarDatosDemo,
   actualizarContadorCarrito,
-  agregarAlCarrito
+  agregarAlCarrito,
+  verificarImagenes,
+  eliminarDelCarrito,
+  obtenerCarrito,
+  obtenerProductos
 } from '../utils/carritoUtils.js';
 
 export function initAppMain() {
@@ -103,7 +108,7 @@ export function initAppMain() {
           <p>💚 <strong>¡Únete a la comunidad de trueque sostenible!</strong> Intercambia tus residuos por productos útiles y ayuda al medio ambiente.</p>
           <img src="https://images.unsplash.com/photo-1483729558449-99ef09a8c325?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" alt="Comunidad Ecológica">
         </section>
-      `;
+      `;  //-- 👈 AQUÍ estaba el error de comillas, ahora es un backtick -->
 
       setTimeout(() => {
         loadProducts('todos');
@@ -121,8 +126,8 @@ export function initAppMain() {
       const container = document.createElement('div');
       container.className = 'cart-view';
 
-      const carrito = JSON.parse(localStorage.getItem('carrito')) || [];
-      const productos = JSON.parse(localStorage.getItem('productos')) || [];
+      const carrito = obtenerCarrito();
+      const productos = obtenerProductos();
 
       const productosEnCarrito = carrito
         .map(item => {
@@ -161,10 +166,16 @@ export function initAppMain() {
                     Cantidad: ${producto.cantidad} | Vendedor: ${producto.vendedor}
                   </p>
                 </div>
-                <button class="btn-remove" data-id="${producto.id}"
-                        style="background: #f44336; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">
-                  🗑️
-                </button>
+                <div style="display:flex; flex-direction:column; gap:6px;">
+                  <button class="btn-trueque-cart" data-id="${producto.id}"
+                          style="background:#2e7d32; color:white; border:none; padding:6px 10px; border-radius:4px; cursor:pointer; font-size:13px;">
+                    Proponer Trueque
+                  </button>
+                  <button class="btn-remove" data-id="${producto.id}"
+                          style="background: #f44336; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">
+                    🗑️
+                  </button>
+                </div>
               </div>
             `).join('')}
           </div>
@@ -177,14 +188,108 @@ export function initAppMain() {
               </div>
             ` : ''}
             <div style="display: flex; gap: 10px; justify-content: flex-end;">
-              <button class="btn btn-secondary" data-route="home">Seguir Comprando</button>
-              <button class="btn btn-primary" id="finalizarCompra">
-                ${total > 0 ? 'Próximo paso del carrito' : 'Proponer Trueques'}
+              <button class="btn btn-secondary" id="btnSeguirComprando" data-route="home">
+                Seguir Comprando
+              </button>
+              <button class="btn btn-primary" id="btnFinalizarCompra" ${total <= 0 ? 'disabled style="opacity:0.6;cursor:not-allowed;"' : ''}>
+                Próximo paso del carrito
               </button>
             </div>
           </div>
         `}
       `;
+
+      // Eventos del carrito
+      setTimeout(() => {
+        // Eliminar
+        container.querySelectorAll('.btn-remove').forEach(btn => {
+          btn.addEventListener('click', e => {
+            const id = parseInt(e.currentTarget.dataset.id, 10);
+            eliminarDelCarrito(id);
+            showNotification('🗑️ Producto eliminado del carrito');
+            if (window.router) {
+              window.router.navigate('carrito');
+            }
+          });
+        });
+
+        // Proponer trueque para un producto específico
+        container.querySelectorAll('.btn-trueque-cart').forEach(btn => {
+          btn.addEventListener('click', e => {
+            const id = parseInt(e.currentTarget.dataset.id, 10);
+            const productoSel = productosEnCarrito.find(p => p.id === id);
+            if (!productoSel) return;
+
+            const usuarioNombre = localStorage.getItem('usuarioNombre') || 'Usuario Ecotrueque';
+
+            const payload = {
+              idProducto: productoSel.id,
+              producto: productoSel.nombre,
+              vendedor: productoSel.vendedor || 'Vendedor',
+              comprador: usuarioNombre
+            };
+
+            sessionStorage.setItem('truequeActual', JSON.stringify(payload));
+
+            if (window.router) {
+              window.router.navigate('chat-trueque');
+            } else {
+              window.location.hash = '#chat-trueque';
+            }
+          });
+        });
+
+        // Seguir comprando
+        const btnSeguir = container.querySelector('#btnSeguirComprando');
+        if (btnSeguir) {
+          btnSeguir.addEventListener('click', e => {
+            e.preventDefault();
+            if (window.router) {
+              window.router.navigate('home');
+            } else {
+              window.location.hash = '#home';
+            }
+          });
+        }
+
+        // Finalizar compra (solo productos de venta)
+        const btnFinalizar = container.querySelector('#btnFinalizarCompra');
+        if (btnFinalizar) {
+          btnFinalizar.addEventListener('click', () => {
+            const productosVenta = productosEnCarrito.filter(p => p.tipo === 'venta');
+
+            if (productosVenta.length === 0) {
+              alert('No hay productos de venta en el carrito. Solo tienes productos para trueque.');
+              return;
+            }
+
+            const usuarioNombre = localStorage.getItem('usuarioNombre') || 'Usuario Ecotrueque';
+
+            const p = productosVenta[0];
+            const cantidad = p.cantidad || 1;
+            const totalTx = p.precio * cantidad;
+
+            const tx = {
+              tipo: 'compra',
+              fecha: new Date().toISOString(),
+              usuario: usuarioNombre,
+              vendedor: p.vendedor || 'Vendedor',
+              producto: p.nombre,
+              cantidad,
+              total: totalTx,
+              metodoPago: 'Tarjeta de Crédito'
+            };
+
+            sessionStorage.setItem('transaccionActual', JSON.stringify(tx));
+
+            if (window.router) {
+              window.router.navigate('recibo');
+            } else {
+              window.location.hash = '#recibo';
+            }
+          });
+        }
+      }, 0);
 
       return container;
     }
@@ -677,7 +782,7 @@ export function initAppMain() {
         return;
       }
 
-      const productos = JSON.parse(localStorage.getItem('productos')) || [];
+      const productos = obtenerProductos();
 
       let productosFiltrados = productos;
 
@@ -764,9 +869,13 @@ export function initAppMain() {
       document.querySelectorAll('.btn-agregar-carrito').forEach(btn => {
         btn.addEventListener('click', e => {
           e.stopPropagation();
-          const id = parseInt(e.target.dataset.id);
-          agregarAlCarrito(id);
-          actualizarContadorCarrito();
+          const id = parseInt(e.target.dataset.id, 10);
+          const ok = agregarAlCarrito(id);
+          if (ok) {
+            showNotification('✅ Producto agregado al carrito');
+          } else {
+            showNotification('❌ No se pudo agregar al carrito', 'error');
+          }
         });
       });
 
@@ -774,7 +883,7 @@ export function initAppMain() {
       document.querySelectorAll('.btn-trueque-card').forEach(btn => {
         btn.addEventListener('click', e => {
           e.stopPropagation();
-          const id = parseInt(e.target.dataset.id);
+          const id = parseInt(e.target.dataset.id, 10);
           const producto = productos.find(p => p.id === id);
           if (producto) {
             abrirModalProducto(producto);
@@ -785,7 +894,7 @@ export function initAppMain() {
       document.querySelectorAll('.btn-compra-card').forEach(btn => {
         btn.addEventListener('click', e => {
           e.stopPropagation();
-          const id = parseInt(e.target.dataset.id);
+          const id = parseInt(e.target.dataset.id, 10);
           const producto = productos.find(p => p.id === id);
           if (producto) {
             abrirModalProducto(producto);
@@ -938,7 +1047,7 @@ export function initAppMain() {
 
     function saveProduct(productData) {
       try {
-        const productos = JSON.parse(localStorage.getItem('productos')) || [];
+        const productos = obtenerProductos();
 
         const newId =
           productos.length > 0 ? Math.max(...productos.map(p => p.id)) + 1 : 1;

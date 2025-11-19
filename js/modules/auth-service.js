@@ -2,8 +2,6 @@
 // Servicio de autenticación aislado.
 // Por ahora usa localStorage como "BD" de prueba.
 // Más adelante puedes cambiar SOLO este archivo para llamar a tu backend real
-// (PHP, Node, etc.) con fetch() sin tocar el resto del front.
-
 const STORAGE_KEY = 'usuariosEcotrueque';
 
 function cargarUsuarios() {
